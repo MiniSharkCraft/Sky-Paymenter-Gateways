@@ -25,12 +25,13 @@ SkySePay is a VND-only bank-transfer gateway extension for Paymenter. It uses Se
 7. Point the SePay webhook to `https://YOUR_PAYMENTER_HOST/extensions/skysepay/webhook`, set event type to money-in only, JSON content type, and HMAC-SHA256 authentication. SePay's current docs require a publicly reachable HTTPS URL.
 8. Check the generated webhook URL route in Paymenter and send a **SePay Test mode** webhook before enabling the gateway for customers. Use only synthetic test invoices and test bank details.
 
-The extension itself does not enable automatic provisioning, live banking, or the gateway. Admins must explicitly enable the gateway after separate approval and staging validation.
+The gateway has an explicit `Enable customer checkout` setting, unchecked by default. Paymenter 1.5.9 considers `canUseGateway()` when building checkout options; without this guard, adding a gateway record can expose it regardless of its `enabled` column. Keep the setting off throughout installation and synthetic testing. Enabling it is a separate operator action after approval and staging validation.
 
 ## Configuration
 
 | Setting | Meaning |
 |---|---|
+| Enable customer checkout | Explicit opt-in; unchecked by default. Keep off for installation and synthetic tests. |
 | Bank code | SePay VietQR bank short name, alias, code, or BIN |
 | Account number | Beneficiary account number or bank-supported VA; preserve leading zeroes |
 | Account name | Display name shown beside the QR |

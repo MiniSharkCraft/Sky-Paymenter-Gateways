@@ -2,6 +2,8 @@
 
 ## Paymenter contract verification
 
+The gateway adds an explicit checkout opt-in that defaults off. This is required because Paymenter v1.5.9’s checkout-gateway helper does not filter gateway rows by the extension `enabled` column; it filters by `canUseGateway()` only when a gateway implements that method. The extension implements this guard and accepts VND only.
+
 The extension targets Paymenter v1.5.9's `App\Classes\Extension\Gateway` abstract `pay(Invoice $invoice, $total)` method, `Extension::config()` settings, `boot()` route loading, `ExtensionHelper::addPayment()`, and `InvoiceTransactionStatus::Succeeded`. The production v1.5.9 source was inspected read-only at `/var/www/paymenter`; no production files or settings were changed as part of this implementation.
 
 Paymenter v1.5.9's helper locks the invoice row but its `invoice_transactions.transaction_id` column is not unique. SkySePay therefore adds an extension-owned table with a unique provider transaction ID. The ledger claim, invoice validation, Paymenter transaction creation, and reconciliation status update execute in one database transaction. This handles duplicate and concurrent deliveries without changing core.

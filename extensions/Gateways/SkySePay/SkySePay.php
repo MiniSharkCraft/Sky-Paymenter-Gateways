@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Paymenter\Extensions\Gateways\SkySePay\Src\CheckoutPolicy;
 use Paymenter\Extensions\Gateways\SkySePay\Src\PaymentReference;
 use Paymenter\Extensions\Gateways\SkySePay\Src\VndAmount;
 use Paymenter\Extensions\Gateways\SkySePay\Src\WebhookAuthenticator;
@@ -39,6 +40,13 @@ class SkySePay extends Gateway
     public function getConfig($values = []): array
     {
         return [
+            [
+                'name' => 'checkout_enabled',
+                'label' => 'Enable customer checkout',
+                'type' => 'checkbox',
+                'required' => false,
+                'description' => 'Off by default. Leave disabled during setup and synthetic testing.',
+            ],
             [
                 'name' => 'bank_code',
                 'label' => 'Bank code (SePay short_name, alias, code, or BIN)',
@@ -76,6 +84,11 @@ class SkySePay extends Gateway
                 'description' => 'Generate a separate random secret. Keep it stable while invoices are open.',
             ],
         ];
+    }
+
+    public function canUseGateway($total, $currency, $type, $items = []): bool
+    {
+        return CheckoutPolicy::allows($this->config('checkout_enabled'), (string) $currency);
     }
 
     public function pay(Invoice $invoice, $total)

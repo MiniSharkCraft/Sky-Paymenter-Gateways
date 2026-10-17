@@ -7,12 +7,14 @@ require __DIR__ . '/../extensions/Gateways/SkySePay/src/PaymentReference.php';
 require __DIR__ . '/../extensions/Gateways/SkySePay/src/VndAmount.php';
 require __DIR__ . '/../extensions/Gateways/SkySePay/src/WebhookPayload.php';
 require __DIR__ . '/../extensions/Gateways/SkySePay/src/WebhookEventLedger.php';
+require __DIR__ . '/../extensions/Gateways/SkySePay/src/CheckoutPolicy.php';
 
 use Paymenter\Extensions\Gateways\SkySePay\Src\WebhookAuthenticator;
 use Paymenter\Extensions\Gateways\SkySePay\Src\PaymentReference;
 use Paymenter\Extensions\Gateways\SkySePay\Src\VndAmount;
 use Paymenter\Extensions\Gateways\SkySePay\Src\WebhookPayload;
 use Paymenter\Extensions\Gateways\SkySePay\Src\WebhookEventLedger;
+use Paymenter\Extensions\Gateways\SkySePay\Src\CheckoutPolicy;
 
 function check(bool $condition, string $message): void
 {
@@ -20,6 +22,11 @@ function check(bool $condition, string $message): void
         throw new RuntimeException($message);
     }
 }
+
+check(!CheckoutPolicy::allows(null, 'VND'), 'gateway must be unavailable by default');
+check(!CheckoutPolicy::allows('0', 'VND'), 'disabled gateway must not appear in checkout');
+check(CheckoutPolicy::allows('1', 'VND'), 'explicitly enabled gateway may accept VND');
+check(!CheckoutPolicy::allows('1', 'USD'), 'gateway must reject non-VND checkout');
 
 $secret = 'synthetic-webhook-secret';
 $timestamp = 1_800_000_000;
