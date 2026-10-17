@@ -1,1 +1,8 @@
 PhonePe.zip
+
+# Generated extension artifacts and local test data
+SkySePay.zip
+.build/
+.env
+.env.*
+*.sqlite
