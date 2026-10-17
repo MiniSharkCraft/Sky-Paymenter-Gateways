@@ -102,6 +102,11 @@ try {
 
     $available = collect(ExtensionHelper::getExtensions('gateway'))->pluck('name')->contains('SkySePay');
     integrationCheck($available, 'SkySePay is missing from Paymenter Admin gateway options.');
+    $adminSettings = collect($gateway->getConfig())->keyBy('name');
+    foreach (['checkout_enabled', 'bank_code', 'account_number', 'account_name', 'webhook_secret', 'reference_secret'] as $settingName) {
+        integrationCheck($adminSettings->has($settingName), 'Admin configuration is missing ' . $settingName . '.');
+    }
+    integrationCheck($adminSettings['webhook_secret']['encrypted'] === true && $adminSettings['reference_secret']['encrypted'] === true, 'Sensitive gateway settings are not encrypted in Paymenter Admin.');
     integrationCheck(!$gateway->canUseGateway(25000, 'VND', 'invoice'), 'Checkout opt-in must stay disabled during integration testing.');
     integrationCheck(!collect(ExtensionHelper::getCheckoutGateways(25000, 'VND', 'invoice'))->contains(fn ($item) => $item->extension === 'SkySePay'), 'SkySePay leaked into public checkout while disabled.');
 
