@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../extensions/Gateways/SkySePay/src/WebhookAuthenticator.php';
-require __DIR__ . '/../extensions/Gateways/SkySePay/src/PaymentReference.php';
-require __DIR__ . '/../extensions/Gateways/SkySePay/src/VndAmount.php';
-require __DIR__ . '/../extensions/Gateways/SkySePay/src/WebhookPayload.php';
-require __DIR__ . '/../extensions/Gateways/SkySePay/src/WebhookEventLedger.php';
-require __DIR__ . '/../extensions/Gateways/SkySePay/src/CheckoutPolicy.php';
+require __DIR__ . '/../extensions/Gateways/SkySePay/Src/WebhookAuthenticator.php';
+require __DIR__ . '/../extensions/Gateways/SkySePay/Src/PaymentReference.php';
+require __DIR__ . '/../extensions/Gateways/SkySePay/Src/VndAmount.php';
+require __DIR__ . '/../extensions/Gateways/SkySePay/Src/WebhookPayload.php';
+require __DIR__ . '/../extensions/Gateways/SkySePay/Src/WebhookEventLedger.php';
+require __DIR__ . '/../extensions/Gateways/SkySePay/Src/CheckoutPolicy.php';
 
 use Paymenter\Extensions\Gateways\SkySePay\Src\WebhookAuthenticator;
 use Paymenter\Extensions\Gateways\SkySePay\Src\PaymentReference;
