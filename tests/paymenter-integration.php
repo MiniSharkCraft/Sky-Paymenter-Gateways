@@ -106,8 +106,9 @@ try {
     integrationCheck(!collect(ExtensionHelper::getCheckoutGateways(25000, 'VND', 'invoice'))->contains(fn ($item) => $item->extension === 'SkySePay'), 'SkySePay leaked into public checkout while disabled.');
 
     $gateway->boot();
-    $route = Route::getRoutes()->getByName('extensions.gateways.skysepay.webhook');
-    integrationCheck($route !== null && in_array('POST', $route->methods(), true), 'Webhook POST route was not registered.');
+    $route = collect(Route::getRoutes()->getRoutes())->first(fn ($candidate) => $candidate->getName() === 'extensions.gateways.skysepay.webhook');
+    integrationCheck($route !== null, 'Webhook POST route was not registered.');
+    integrationCheck(in_array('POST', $route->methods(), true), 'Webhook route does not accept POST.');
     integrationCheck(in_array(Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, $route->excludedMiddleware(), true), 'Webhook route does not exclude Paymenter CSRF middleware.');
 
     $invoice = Invoice::query()->with(['items', 'transactions'])->findOrFail($invoiceId);
@@ -175,7 +176,13 @@ try {
 } catch (RuntimeException $exception) {
     DB::rollBack();
     if ($exception->getMessage() === '__SKYSEPAY_TEST_COMPLETE__') {
-        fwrite(STDOUT, "PASS: Paymenter gateway discovery, checkout disabled, POST/CSRF route, QR rendering, HMAC rejection, stale timestamp, partial/overpayment/account mismatch, successful invoice recording and replay. Synthetic DB transaction rolled back.\n");
+        integrationCheck(!DB::table('extensions')->where('extension', 'SkySePay')->exists(), 'Synthetic gateway row survived rollback.');
+        integrationCheck(!DB::table('users')->where('id', $userId)->exists(), 'Synthetic user survived rollback.');
+        integrationCheck(!DB::table('invoices')->where('id', $invoiceId)->exists(), 'Synthetic invoice survived rollback.');
+        foreach ([$payload['id'], $overpaymentPayload['id'], $wrongAccountPayload['id'], $successfulPayload['id']] as $eventId) {
+            integrationCheck(!DB::table('skysepay_webhook_events')->where('transaction_id', (string) $eventId)->exists(), 'Synthetic webhook ledger row survived rollback.');
+        }
+        fwrite(STDOUT, "PASS: Paymenter gateway discovery, checkout disabled, POST/CSRF route, QR rendering, HMAC rejection, stale timestamp, partial/overpayment/account mismatch, successful invoice recording and replay. All synthetic DB rows rolled back.\n");
         exit(0);
     }
     throw $exception;
